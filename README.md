@@ -40,7 +40,7 @@ I could use to experiment with this pattern...
 
 So I wrote one.
 
-The objective of LunarECS is *not* the best ECS in the world.  
+LunarECS is *not* the best ECS in the world.  
 It will never be the fastest, nor the most feature-rich, nor the most scalable.
 It is my humble implementation aimed at hobbyists and hackers.  Maybe you can put it
 into production use, but it's primarily for having fun, prototyping, picking apart the 
