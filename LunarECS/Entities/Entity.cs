@@ -9,9 +9,8 @@ namespace LunarECS.Entities
     public struct Entity
     {
         public int Id { get; internal set; }
-
-        internal int Gen;
-        internal EntityManager Owner;
+        internal int Gen { get; set; }
+        internal EntityManager Owner { get; set; }
 
         internal Entity(EntityManager owner, int id)
         {

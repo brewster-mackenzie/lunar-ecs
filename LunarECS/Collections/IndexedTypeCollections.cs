@@ -3,11 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using LunarECS.Tiles3;
+using LunarECS.Tiles;
 
 namespace LunarECS.Collections
 {
-
     class IndexedTypeCollections<TCategory>
     {
         RecyclableIdCollection[] _collections;

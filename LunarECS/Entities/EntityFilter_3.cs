@@ -10,7 +10,7 @@ using System.Diagnostics;
 
 namespace LunarECS.Entities
 {
-    public class EntityFilterWithCache<T1, T2, T3> : EntityFilterWithCache
+    public class EntityFilter<T1, T2, T3> : EntityFilter
         where T1 : struct
         where T2 : struct
         where T3 : struct
@@ -26,7 +26,7 @@ namespace LunarECS.Entities
             IndexedTypeGroup<EntityComponent>.IndexedType<T3>.TypeId
         ];
 
-        public class Excl<T4> : EntityFilterWithCache<T1, T2, T3> where T4 : struct
+        public class Excl<T4> : EntityFilter<T1, T2, T3> where T4 : struct
         {
             static readonly int[] _excludeComponentTypeIds = [
                 IndexedTypeGroup<EntityComponent>.IndexedType<T4>.TypeId
@@ -37,11 +37,11 @@ namespace LunarECS.Entities
             { }
         }
 
-        public EntityFilterWithCache()
+        public EntityFilter()
             : base(_includeComponentTypeIds, Array.Empty<int>())
         { }
 
-        private EntityFilterWithCache(int[] excludeComponentTypeIds)
+        private EntityFilter(int[] excludeComponentTypeIds)
             : base(_includeComponentTypeIds, excludeComponentTypeIds)
         { }
 

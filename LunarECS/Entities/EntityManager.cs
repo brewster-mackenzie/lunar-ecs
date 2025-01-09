@@ -10,14 +10,15 @@ using LunarECS.Entities;
 
 namespace LunarECS.Entities
 {
-    internal class EntityManager
+
+    public class EntityManager
     {
         readonly IndexedTypeCollections<EntityComponent> _dataPools;
         readonly RecyclableIdCollection<EntityData> _entityPool;
         readonly HashSet<int> _liveEntities;
         readonly Entity _nullEntity;
-        readonly Dictionary<Type, EntityFilter> _filtersByType;
-        readonly Dictionary<int, List<EntityFilter>> _filtersByCompTypeId;
+        readonly Dictionary<Type, EntitySubscriber> _subscribersByType;
+        readonly Dictionary<int, List<EntitySubscriber>> _subscribersByCompId;
         Entity[] _entities;
 
         public EntityManager()
@@ -25,8 +26,8 @@ namespace LunarECS.Entities
             _dataPools = new();
             _entityPool = new();
             _liveEntities = new();
-            _filtersByType = new();
-            _filtersByCompTypeId = new();
+            _subscribersByType = new();
+            _subscribersByCompId = new();
             _entities = new Entity[16];
 
 
@@ -80,7 +81,7 @@ namespace LunarECS.Entities
                 {
                     _dataPools.Get(i).Release(entityData.Cids[i]);
                     entityData.Cids[i] = -1;
-                    NotifyFiltersEntityDeleted(ref entityData, i);
+                    NotifySubscribersEntityDeleted(ref entityData, i);
                 }
             }
 
@@ -123,7 +124,7 @@ namespace LunarECS.Entities
             entityData.Cids[componentTypeId] = _dataPools.Get(componentTypeId).Reserve();
             entityData.Flags |= componentTypeFlag;
 
-            NotifyFiltersEntityChanged(ref entityData, componentTypeId);
+            NotifySubscribersEntityChanged(ref entityData, componentTypeId);
         }
 
         private void RemoveComponent(ref EntityData entityData, int componentTypeId, ulong componentTypeFlag)
@@ -166,7 +167,7 @@ namespace LunarECS.Entities
             {
 
                 RemoveComponent(ref entityData, componentTypeId, componentTypeFlag);
-                NotifyFiltersEntityChanged(ref entityData, componentTypeId);
+                NotifySubscribersEntityChanged(ref entityData, componentTypeId);
                 return true;
             }
 
@@ -215,104 +216,63 @@ namespace LunarECS.Entities
 
         #region Filtering
 
-        public EntityFilterWithCache<T1> CreateFilter<T1>() where T1 : struct
+        public T Subscribe<T>() where T : EntitySubscriber, new()
         {
-            return InternalCreateFilter<EntityFilterWithCache<T1>>();
-        }
-
-        public EntityFilterWithCache<T1> CreateFilterExcl<T1, TExcl1>() where T1 : struct where TExcl1 : struct
-        {
-            return InternalCreateFilter<EntityFilterWithCache<T1>.Excl<TExcl1>>();
-        }
-
-        public EntityFilterWithCache<T1, T2> CreateFilter<T1, T2>() where T1 : struct where T2 : struct
-        {
-            return InternalCreateFilter<EntityFilterWithCache<T1, T2>>();
-        }
-
-        public EntityFilterWithCache<T1, T2> CreateFilterExcl<T1, T2, TExcl1>() where T1 : struct where T2 : struct where TExcl1 : struct
-        {
-            return InternalCreateFilter<EntityFilterWithCache<T1, T2>.Excl<TExcl1>>();
-        }
-
-        public EntityFilterWithCache<T1, T2, T3> CreateFilter<T1, T2, T3>() where T1 : struct where T2 : struct where T3 : struct
-        {
-            return InternalCreateFilter<EntityFilterWithCache<T1, T2, T3>>();
-        }
-
-        public EntityFilterWithCache<T1, T2, T3> CreateFilterExcl<T1, T2, T3, TExcl1>() where T1 : struct where T2 : struct where T3 : struct where TExcl1 : struct
-        {
-            return InternalCreateFilter<EntityFilterWithCache<T1, T2, T3>.Excl<TExcl1>>();
-        }
-
-        public EntityFilterWithCache<T1, T2, T3, T4> CreateFilter<T1, T2, T3, T4>() where T1 : struct where T2 : struct where T3 : struct where T4 : struct
-        {
-            return InternalCreateFilter<EntityFilterWithCache<T1, T2, T3, T4>>();
-        }
-
-        public EntityFilterWithCache<T1, T2, T3, T4> CreateFilterExcl<T1, T2, T3, T4, TExcl1>() where T1 : struct where T2 : struct where T3 : struct where T4 : struct where TExcl1 : struct
-        {
-            return InternalCreateFilter<EntityFilterWithCache<T1, T2, T3, T4>.Excl<TExcl1>>();
-        }
-
-
-        private T InternalCreateFilter<T>() where T : EntityFilter, new()
-        {
-            if (_filtersByType.TryGetValue(typeof(T), out EntityFilter? found))
+            if (_subscribersByType.TryGetValue(typeof(T), out EntitySubscriber? found))
             {
                 found.IncreaseHandles();
                 return (T)found;
             }
 
 
-            var filter = new T();
+            var subscriber = new T();
 
-            filter.Initialize(this);
-            for (int i = 0; i < filter.IncludeComponentTypeIdCount; i++)
+            subscriber.Initialize(this);
+            for (int i = 0; i < subscriber.IncludeComponentTypeIdCount; i++)
             {
-                if (!_filtersByCompTypeId.TryGetValue(filter.IncludeComponentTypeIds[i], out List<EntityFilter>? listByTypeId))
-                    _filtersByCompTypeId.Add(filter.IncludeComponentTypeIds[i], listByTypeId = new());
+                if (!_subscribersByCompId.TryGetValue(subscriber.IncludeComponentTypeIds[i], out List<EntitySubscriber>? listByTypeId))
+                    _subscribersByCompId.Add(subscriber.IncludeComponentTypeIds[i], listByTypeId = new());
 
-                listByTypeId.Add(filter);
+                listByTypeId.Add(subscriber);
             }
 
-            for (int i = 0; i < filter.ExcludeComponentTypeIdCount; i++)
+            for (int i = 0; i < subscriber.ExcludeComponentTypeIdCount; i++)
             {
-                if (!_filtersByCompTypeId.TryGetValue(filter.ExcludeComponentTypeIds[i], out List<EntityFilter>? listByTypeId))
-                    _filtersByCompTypeId.Add(filter.ExcludeComponentTypeIds[i], listByTypeId = []);
+                if (!_subscribersByCompId.TryGetValue(subscriber.ExcludeComponentTypeIds[i], out List<EntitySubscriber>? listByTypeId))
+                    _subscribersByCompId.Add(subscriber.ExcludeComponentTypeIds[i], listByTypeId = []);
 
-                listByTypeId.Add(filter);
+                listByTypeId.Add(subscriber);
             }
 
-            _filtersByType.Add(typeof(T), filter);
+            _subscribersByType.Add(typeof(T), subscriber);
 
-            filter.ApplyInitialFilter(_liveEntities);
-            return filter;
+            subscriber.ApplyInitialFilter(_liveEntities);
+            return subscriber;
         }
 
-        internal void DeleteFilter(EntityFilter filter)
+        internal void DeleteSubscriber(EntitySubscriber subscriber)
         {
-            filter.DecreaseHandles();
-            if (filter.Handles == 0)
+            subscriber.DecreaseHandles();
+            if (subscriber.Handles == 0)
             {
-                _filtersByType.Remove(filter.GetType());
-                for (int i = 0; i < filter.IncludeComponentTypeIdCount; i++)
-                    _filtersByCompTypeId[filter.IncludeComponentTypeIds[i]].Remove(filter);
+                _subscribersByType.Remove(subscriber.GetType());
+                for (int i = 0; i < subscriber.IncludeComponentTypeIdCount; i++)
+                    _subscribersByCompId[subscriber.IncludeComponentTypeIds[i]].Remove(subscriber);
             }
         }
 
-        private void NotifyFiltersEntityChanged(ref EntityData entity, int componentTypeId)
+        private void NotifySubscribersEntityChanged(ref EntityData entity, int componentTypeId)
         {
-            if (_filtersByCompTypeId.TryGetValue(componentTypeId, out List<EntityFilter>? filters))
-                foreach (var filter in filters)
-                    filter.NotifyEntityChanged(ref entity);
+            if (_subscribersByCompId.TryGetValue(componentTypeId, out List<EntitySubscriber>? subscribers))
+                foreach (var subscriber in subscribers)
+                    subscriber.NotifyEntityChanged(ref entity);
         }
 
-        private void NotifyFiltersEntityDeleted(ref EntityData entity, int componentTypeId)
+        private void NotifySubscribersEntityDeleted(ref EntityData entity, int componentTypeId)
         {
-            if (_filtersByCompTypeId.TryGetValue(componentTypeId, out List<EntityFilter>? filters))
-                foreach (var filter in filters)
-                    filter.NotifyEntityDeleted(ref entity);
+            if (_subscribersByCompId.TryGetValue(componentTypeId, out List<EntitySubscriber>? subscribers))
+                foreach (var subscriber in subscribers)
+                    subscriber.NotifyEntityDeleted(ref entity);
         }
 
         #endregion             

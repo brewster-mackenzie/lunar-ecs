@@ -1,4 +1,4 @@
-﻿using LunarECS.Tiles3;
+﻿using LunarECS.Tiles;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -10,7 +10,7 @@ namespace LunarECS.Collections
 
     public struct GridCell3<T> where T : struct
     {
-        internal Grid3<T> Owner { get; set; }
+        internal AutoRefGrid3<T> Owner { get; set; }
 
         public int X { get; internal set; }
         public int Y { get; internal set; }
@@ -22,7 +22,7 @@ namespace LunarECS.Collections
         }
     }
 
-    public class Grid3<T> where T : struct
+    public class AutoRefGrid3<T> where T : struct
     {
         T[][][] _cells;
         int _capacityX, _capacityY, _capacityZ;
@@ -32,7 +32,7 @@ namespace LunarECS.Collections
         public int CapacityY => _capacityY;
         public int CapacityZ => _capacityZ;
 
-        public Grid3(int capacityX, int capacityY, int capacityZ)
+        public AutoRefGrid3(int capacityX, int capacityY, int capacityZ)
         {
             _cells = [];
 

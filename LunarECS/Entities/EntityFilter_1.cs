@@ -3,7 +3,7 @@
 namespace LunarECS.Entities
 {
 
-    public class EntityFilterWithCache<T1> : EntityFilterWithCache where T1 : struct
+    public class EntityFilter<T1> : EntityFilter where T1 : struct
     {
         RecyclableIdCollection<T1> _t1Pool = null!;
 
@@ -11,7 +11,7 @@ namespace LunarECS.Entities
             IndexedTypeGroup<EntityComponent>.IndexedType<T1>.TypeId
         ];
 
-        public class Excl<T2> : EntityFilterWithCache<T1> where T2 : struct
+        public class Excl<T2> : EntityFilter<T1> where T2 : struct
         {
             static readonly int[] _excludeComponentTypeIds = [
                 IndexedTypeGroup<EntityComponent>.IndexedType<T2>.TypeId
@@ -22,11 +22,11 @@ namespace LunarECS.Entities
         }
 
 
-        public EntityFilterWithCache()
+        public EntityFilter()
             : base(_includeComponentTypeIds, [])
         { }
 
-        private EntityFilterWithCache(int[] excludeComponentTypeIds)
+        private EntityFilter(int[] excludeComponentTypeIds)
             : base(_includeComponentTypeIds, excludeComponentTypeIds)
         { }
 
@@ -40,6 +40,8 @@ namespace LunarECS.Entities
         {
             return ref _t1Pool.GetRef(GetComponentId(0, index));
         }
+
+        
     }
 }
 

@@ -1,16 +1,8 @@
 ﻿using LunarECS.Collections;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Diagnostics;
-//using System.Diagnostics.CodeAnalysis;
-//using System.Text;
-
 
 namespace LunarECS.Entities
 {
-    public class EntityFilterWithCache<T1, T2, T3, T4> : EntityFilterWithCache
+    public class EntityFilter<T1, T2, T3, T4> : EntityFilter
         where T1 : struct
         where T2 : struct
         where T3 : struct
@@ -30,7 +22,7 @@ namespace LunarECS.Entities
             IndexedTypeGroup<EntityComponent>.IndexedType<T4>.TypeId
         };
 
-        public class Excl<T5> : EntityFilterWithCache<T1, T2, T3, T4> where T5 : struct
+        public class Excl<T5> : EntityFilter<T1, T2, T3, T4> where T5 : struct
         {
             static readonly int[] _excludeComponentTypeIds = [
                 IndexedTypeGroup<EntityComponent>.IndexedType<T5>.TypeId
@@ -41,11 +33,11 @@ namespace LunarECS.Entities
             { }
         }
 
-        public EntityFilterWithCache()
+        public EntityFilter()
             : base(_includeComponentTypeIds, [])
         { }
 
-        private EntityFilterWithCache(int[] excludeComponentTypeIds)
+        private EntityFilter(int[] excludeComponentTypeIds)
             : base(_includeComponentTypeIds, excludeComponentTypeIds)
         { }
 

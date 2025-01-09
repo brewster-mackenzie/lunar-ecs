@@ -2,7 +2,7 @@
 
 namespace LunarECS.Entities
 {
-    public class EntityFilterWithCache<T1, T2> : EntityFilterWithCache
+    public class EntityFilter<T1, T2> : EntityFilter
         where T1 : struct
         where T2 : struct
     {
@@ -14,7 +14,7 @@ namespace LunarECS.Entities
             IndexedTypeGroup<EntityComponent>.IndexedType<T2>.TypeId
         ];
 
-        public class Excl<T3> : EntityFilterWithCache<T1, T2> where T3 : struct
+        public class Excl<T3> : EntityFilter<T1, T2> where T3 : struct
         {
             static readonly int[] _excludeComponentTypeIds = [
                  IndexedTypeGroup<EntityComponent>.IndexedType<T3>.TypeId
@@ -24,7 +24,7 @@ namespace LunarECS.Entities
             { }
         }
 
-        public class Excl<T3, T4> : EntityFilterWithCache<T3, T4> where T3 : struct where T4 : struct
+        public class Excl<T3, T4> : EntityFilter<T3, T4> where T3 : struct where T4 : struct
         {
             static readonly int[] _excludeComponentTypeIds = [
                 IndexedTypeGroup<EntityComponent>.IndexedType<T3>.TypeId,
@@ -34,11 +34,11 @@ namespace LunarECS.Entities
             public Excl() : base(_excludeComponentTypeIds) { }
         }
 
-        public EntityFilterWithCache()
+        public EntityFilter()
             : base(_includeComponentTypeIds, [])
         { }
 
-        private EntityFilterWithCache(int[] excludeComponentTypeIds)
+        private EntityFilter(int[] excludeComponentTypeIds)
             : base(_includeComponentTypeIds, excludeComponentTypeIds)
         { }
 
