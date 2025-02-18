@@ -9,20 +9,9 @@ Whether you are a professional game developer or merely an aspiring hobbyist lik
 you probably haven't failed to notice the abundance of ECS advocates
 online and have perhaps wondered what all the fuss is about.
 
-When I first stumbled upon this approach to entity composition it was fabulous relevation.  
-
-> _I can make my code faster and more flexible!_
-
-> _I can break free from the shackles of object inheritance!_
-
-> _I can cleanly separate data and logic!_
-
-But once I started looking around for a decent ECS library to use, it became apparent
-that there were not many options for someone like me, a hobbyist who just wanted to experiment
-with a few ideas and get a better understanding of how to adapt my existing code 
-for ECS.  
-
-On top of this, I found that many existing implementations deviate in some way
+I started looking around for a robust ECS library to use with MonoGame, but it became apparent
+that many of the existing solutions were designed for much more complex games than I was trying
+to create. Furthermore, I found that they would often deviate in some way
 from my basic understanding of ECS, or come with a whole bunch of additional features
 to increase performance in certain edge cases, or features to assist with some of the heavy lifting
 involved when starting a new project, or features designed for enormous game worlds with
@@ -33,7 +22,6 @@ millions of entities.
 > _Why does it keep talking about Archetypes?_
 
 > _Why are all these performance tweaks necessary for my little game?_
-
 
 I just wanted a bare-bones implementation, an ECS MVP, a simple toolkit that 
 I could use to experiment with this pattern...
@@ -134,9 +122,6 @@ development to avoid premature optimisation and to help reduce the complexity of
 some internal operations.  It trades memory for performance, which I decided was 
 reasonable given that LunarECS is intended to be used by hobbyists and for
 small projects only (although in reality it can support much more than that).
-
-This obviously wastes memory in projects where a large number of component types
-have been defined.  
 
 A better alternative for projects where this might become an issue would be to
 store the component index as part of the array, for example:
