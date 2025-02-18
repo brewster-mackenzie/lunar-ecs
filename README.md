@@ -130,4 +130,12 @@ store the component index as part of the array, for example:
 [component1_typeId, component1_id, component2_typeId, component2_id ...]
 ```
 
+### Tile Component System
+
+I like the idea of applying ECS to a tile-based system, but I'm not sold on its advantages
+unless serious consideration is given to the underlying data structures when
+a large number of tiles (more than 10000) are required.
+
+I have included a very minimal Tile Component System (TCS) for experimentation.  It only
+supports 3D spaces at the moment, but I will probably include 2D support at a later date.
 
